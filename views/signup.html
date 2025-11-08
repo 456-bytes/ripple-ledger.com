@@ -1,0 +1,256 @@
+
+<% if (typeof inviteRequired !== 'undefined' && inviteRequired) { %>
+  <div style="background:#f8d7da;padding:10px;border-radius:4px;color:#842029;margin-bottom:10px;">
+    <strong>Access link required:</strong> <%= message || 'You need an admin-sent access link to register.' %>
+  </div>
+<% } %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charSet="UTF-8" />
+  <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
+  <title>Stake XRP - Register</title>
+  <link rel="icon" href="/icons/logo.png" />
+  <link rel="stylesheet" href="/_next/static/css/2122f29355985571.css" />
+</head>
+<body class="antialiased">
+  <div class="flex justify-center items-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
+      <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Register</h2>
+
+      <form id="signupForm" class="space-y-4" method="POST" action="/signup">
+        <% if (inviteToken) { %>
+          <input type="hidden" name="inviteToken" value="<%= inviteToken %>" />
+        <% } %>
+        
+        <div>
+          <label for="username">Username</label>
+          <input type="text" name="username" placeholder="Enter your username"
+            class="mt-1 p-2 w-full border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-black" />
+          <div class="username error" style="color:red;"></div>
+        </div>
+
+        <div>
+          <label for="email">Email</label>
+          <input type="email" name="email" placeholder="Enter your email"
+            class="mt-1 p-2 w-full border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-black" />
+          <div class="email error" style="color:red;"></div>
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <input type="password" name="password" placeholder="Enter your password"
+            class="mt-1 p-2 w-full border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-black" />
+          <div class="password error" style="color:red;"></div>
+        </div>
+
+        <button type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">Sign up</button>
+          
+          <input type="hidden" name="inviteToken" id="inviteToken">
+          <script>
+            // Pull ?token=... from URL and insert into form
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get("token");
+            if (token) {
+              document.getElementById("inviteToken").value = token;
+            }
+          </script>
+      </form>
+
+      <div class="text-center mt-4">
+        <p class="text-sm">Already have an account? 
+          <a href="/login" class="text-blue-600 hover:text-blue-800">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- POPUP ALERT FUNCTION ----------
+    function showPopup(message) {
+      // Remove existing popup if any
+      const oldPopup = document.getElementById("customPopup");
+      if (oldPopup) oldPopup.remove();
+  
+      // Create overlay
+      const overlay = document.createElement("div");
+      overlay.id = "customPopup";
+      overlay.style.position = "fixed";
+      overlay.style.top = "0";
+      overlay.style.left = "0";
+      overlay.style.width = "100%";
+      overlay.style.height = "100%";
+      overlay.style.background = "rgba(0,0,0,0.5)";
+      overlay.style.display = "flex";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      overlay.style.zIndex = "9999";
+      overlay.style.animation = "fadeIn 0.3s ease";
+  
+      // Popup box
+      const box = document.createElement("div");
+      box.style.background = "white";
+      box.style.padding = "25px";
+      box.style.borderRadius = "10px";
+      box.style.boxShadow = "0 5px 20px rgba(0,0,0,0.3)";
+      box.style.textAlign = "center";
+      box.style.maxWidth = "300px";
+      box.style.width = "80%";
+      box.style.color = "#333";
+      box.style.fontFamily = "Arial, sans-serif";
+      box.style.animation = "slideUp 0.3s ease";
+  
+      // Icon
+      const icon = document.createElement("div");
+      icon.innerHTML = "⚠️";
+      icon.style.fontSize = "40px";
+      icon.style.marginBottom = "10px";
+  
+      // Message
+      const text = document.createElement("div");
+      text.textContent = message;
+      text.style.fontSize = "16px";
+      text.style.marginBottom = "20px";
+      text.style.fontWeight = "600";
+  
+      // OK button
+      const button = document.createElement("button");
+      button.textContent = "OK";
+      button.style.background = "#007bff";
+      button.style.color = "white";
+      button.style.border = "none";
+      button.style.padding = "8px 16px";
+      button.style.borderRadius = "6px";
+      button.style.cursor = "pointer";
+      button.style.fontWeight = "600";
+      button.onclick = () => overlay.remove();
+  
+      // Append
+      box.appendChild(icon);
+      box.appendChild(text);
+      box.appendChild(button);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+  
+      // Auto close after 4 seconds
+      setTimeout(() => {
+        if (document.body.contains(overlay)) overlay.remove();
+      }, 4000);
+    }
+  
+    // ---------- BANNER ALERT ----------
+    function showBanner(message, color = "#ffe6e6", textColor = "#b30000") {
+      let banner = document.getElementById("alertBanner");
+      if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "alertBanner";
+        banner.style.marginBottom = "15px";
+        banner.style.padding = "12px";
+        banner.style.borderRadius = "6px";
+        banner.style.fontWeight = "600";
+        banner.style.textAlign = "center";
+        banner.style.transition = "opacity 0.3s ease";
+        form.parentNode.insertBefore(banner, form);
+      }
+      banner.style.backgroundColor = color;
+      banner.style.color = textColor;
+      banner.textContent = message;
+  
+      setTimeout(() => {
+        banner.style.opacity = "0";
+        setTimeout(() => banner.remove(), 300);
+      }, 5000);
+    }
+  
+    // ---------- SIGNUP FORM ----------
+    const form = document.getElementById("signupForm");
+    const usernameError = document.querySelector(".username.error");
+    const emailError = document.querySelector(".email.error");
+    const passwordError = document.querySelector(".password.error");
+  
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+  
+      usernameError.textContent = "";
+      emailError.textContent = "";
+      passwordError.textContent = "";
+  
+      const username = form.username.value;
+      const email = form.email.value;
+      const password = form.password.value;
+      const inviteToken = form.querySelector("input[name='inviteToken']")?.value;
+  
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          body: JSON.stringify({ username, email, password, inviteToken }),
+          headers: { "Content-Type": "application/json" },
+        });
+  
+        const data = await res.json();
+        console.log(data);
+  
+        if (!res.ok) {
+          const message = data.message || "Signup failed. Access Link Required.";
+          showPopup(`⚠️ ${message}`);
+          showBanner(`⚠️ ${message}`);
+          return;
+        }
+  
+        if (data.errors) {
+          usernameError.textContent = data.errors.username || "";
+          emailError.textContent = data.errors.email || "";
+          passwordError.textContent = data.errors.password || "";
+          return;
+        }
+  
+        if (data.success && data.userId) {
+          if (data.token) {
+            localStorage.setItem("token", data.token);
+          }
+          location.assign(`/verify?userId=${data.userId}`);
+        }
+      } catch (err) {
+        console.error("Signup error:", err);
+        showPopup("⚠️ Signup failed. Please try again.");
+        showBanner("⚠️ Signup failed. Please try again.");
+      }
+    });
+  
+    // ---------- CSS Animations ----------
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    `;
+    document.head.appendChild(style);
+  </script>
+  
+  
+  
+  
+
+
+  <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/68ca8e6d9cdd18192ac5a318/1j5bjonac';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
+
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+      <div style="background-color:#ffe6e6;color:#b30000;padding:12px;border-radius:6px;margin-bottom:15px;font-weight:600;">
+        <%= errorMessage %>
+      </div>
+    <% } %>
+    
+</body>
+</html>

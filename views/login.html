@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
+    <title>Stake XRP</title>
+    <link rel="icon" href="/icons/logo.png" />
+    <meta name="description" content="Stake XRP" />
+    <meta name="keywords" content="Stake XRP" />
+    <meta name="author" content="Stake XRP" />
+    <link rel="preload" href="/_next/static/css/2122f29355985571.css" as="style" />
+    <link rel="stylesheet" href="/_next/static/css/2122f29355985571.css" />
+    <noscript></noscript>
+    <script defer src="/_next/static/chunks/polyfills-42372ed130431b0a.js"></script>
+    <script src="/_next/static/chunks/webpack-8cac0b4b405cede1.js" defer></script>
+    <script src="/_next/static/chunks/framework-a4ddb9b21624b39b.js" defer></script>
+    <script src="/_next/static/chunks/main-013d79fd40076fd9.js" defer></script>
+    <script src="/_next/static/chunks/pages/_app-812ca9a74095ff87.js" defer></script>
+    <script src="/_next/static/chunks/965-e3a3c044d52d8469.js" defer></script>
+    <script src="/_next/static/chunks/392-3fd9fb2f56c66704.js" defer></script>
+    <script src="/_next/static/chunks/pages/signup-49059faba74270b1.js" defer></script>
+    <script src="/_next/static/gIrKINQ0M-PdHapaokhUX/_buildManifest.js" defer></script>
+    <script src="/_next/static/gIrKINQ0M-PdHapaokhUX/_ssgManifest.js" defer></script>
+</head>
+
+<body class="antialiased">
+    <div>
+        <div>
+            <div style="background:#fff">
+                <a style="padding:2rem 1.5rem" href="/"><img alt="XRPL.org" loading="lazy" width="200" height="200"
+                        decoding="async" src="/images/dev.svg" /></a>
+                <div class="flex justify-center items-center min-h-screen bg-gray-100 ">
+                    <div class="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
+                        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h2>
+                        <form class="space-y-4">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="text" name="email" placeholder="Enter your email"
+                                    class="mt-1 p-2 w-full border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-black" />
+                            </div>
+                            <div class="email error" style="color: red;"></div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" name="password" placeholder="Enter your password"
+                                    class="mt-1 p-2 w-full border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-black" />
+                            </div>
+                            <div class="password error" style="color: red;"></div>
+
+                            <button type="submit"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">Sign
+                                in</button>
+                        </form>
+                        <!-- Sign Up Link -->
+                        <div class="text-center mt-4">
+                            <p class="text-sm">Don't have an account? <a href="/signup"
+                                    class="text-blue-600 hover:text-blue-800">Sign Up</a></p>
+                        </div>
+
+                        <script>
+                            const form = document.querySelector('form');
+                            const emailError = document.querySelector('.email.error');
+                            const passwordError = document.querySelector('.password.error');
+
+                            form.addEventListener('submit', async (e) => {
+                                e.preventDefault();
+
+                                // Reset errors
+                                emailError.textContent = '';
+                                passwordError.textContent = '';
+
+                                // Get form values
+                                const email = form.email.value;
+                                const password = form.password.value;
+
+                                // Validate fields
+                                if (!email || !password) {
+                                    if (!email) emailError.textContent = 'Email is required';
+                                    if (!password) passwordError.textContent = 'Password is required';
+                                    return;
+                                }
+
+                                try {
+                                    // ✅ Call API route instead of page route
+                                    const res = await fetch('/api/auth/login', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            email,
+                                            password
+                                        })
+                                    });
+
+                                    const data = await res.json();
+                                    console.log(data);
+
+                                    if (!res.ok) {
+                                        // Backend returned error
+                                        if (data.errors) {
+                                            emailError.textContent = data.errors.email || '';
+                                            passwordError.textContent = data.errors.password || '';
+                                        } else {
+                                            alert(data.message || 'Login failed');
+                                        }
+                                        return;
+                                    }
+
+                                    if (data.success) {
+                                        // ✅ Save token to localStorage
+                                        localStorage.setItem('token', data.token);
+
+                                        // ✅ Redirect based on role
+                                        if (data.user.role === 'admin') {
+                                            window.location.href = '/admin'; // your admin dashboard
+                                        } else {
+                                            window.location.href = '/dashboard';
+                                        }
+                                    }
+
+                                } catch (err) {
+                                    console.error('Error logging in:', err);
+                                    alert('Something went wrong. Please try again.');
+                                }
+                            });
+                        </script>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/68ca8e6d9cdd18192ac5a318/1j5bjonac';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
+  </body>
+
+</html>

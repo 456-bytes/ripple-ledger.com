@@ -1,0 +1,81 @@
+.staking_container__rqiok {
+    max-width: 800px;
+    padding: 20px;
+    margin: 3rem auto 15px;
+    text-align: center;
+    background: #fff;
+    border-radius: 15px;
+    color: #000
+}
+
+.staking_title__ejE8O {
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 30px
+}
+
+.staking_subtitle__Likm_ {
+    font-size: 18px;
+    margin-bottom: 30px;
+    color: #b0b0b0
+}
+
+.staking_chartContainer__D4FHX {
+    background: #2a2a3b;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px
+}
+
+.staking_rocketContainer__nY_iG {
+    width: 100px;
+    height: 300px;
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center
+}
+
+.staking_rocket__KGCHt {
+    font-size: 50px;
+    position: absolute;
+    bottom: 0;
+    transition: transform 1s ease-in-out
+}
+
+.staking_buttons__c_dgZ {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 3rem 0
+}
+
+.staking_airdropButton__rPstp,.staking_stakeButton__4zzJI {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: .3s ease-in-out
+}
+
+.staking_stakeButton__4zzJI {
+    background: blue;
+    color: #fff
+}
+
+.staking_airdropButton__rPstp {
+    background: #ff9800;
+    color: #fff
+}
+
+.staking_stakeButton__4zzJI:hover {
+    background: blue
+}
+
+.staking_airdropButton__rPstp:hover {
+    background: #e68900
+}

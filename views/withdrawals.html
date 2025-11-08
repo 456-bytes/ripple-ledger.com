@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Withdrawal Request</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .withdraw-container {
+      max-width: 450px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h2 {
+      color: #1e3a8a;
+      margin-bottom: 1rem;
+    }
+
+    #withdrawBtn {
+      background: #2563eb;
+      color: white;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #withdrawBtn:hover {
+      background: #1e40af;
+    }
+
+    .withdraw-form {
+      margin-top: 20px;
+      display: none;
+      text-align: left;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    .withdraw-form h3 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #111827;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      padding: 12px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background: #1e40af;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="withdraw-container">
+    <h2>💸 Request Withdrawal</h2>
+    <button id="withdrawBtn">Request Withdrawal</button>
+
+    <!-- Hidden Form -->
+    <div class="withdraw-form" id="withdrawForm">
+      <h3>Withdrawal Form</h3>
+      <form id="withdrawalRequestForm">
+        <select name="method" required>
+          <option value="">Select Method</option>
+          <option value="BTC">BTC</option>
+          <option value="XRP">XRP</option>
+          <option value="USDT-TRC20">USDT-TRC20</option>
+        </select>
+
+        <input type="text" name="address" placeholder="Wallet Address" required />
+        <input type="number" name="amount" placeholder="Amount" min="1" required />
+
+        <select name="source" required>
+          <option value="">Select Source</option>
+          <option value="stake">Stake</option>
+          <option value="stakeProfit">Stake Profit</option>
+          <option value="airdrop">Airdrop</option>
+          <option value="airdropProfit">Airdrop Profit</option>
+        </select>
+
+        <button type="submit">Submit Withdrawal</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    // Toggle form visibility
+    document.getElementById("withdrawBtn").addEventListener("click", () => {
+      document.getElementById("withdrawForm").style.display = "block";
+    });
+
+    // Handle form submit
+    document.getElementById("withdrawalRequestForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const body = {};
+      formData.forEach((v, k) => body[k] = v);
+
+      try {
+        const res = await fetch("/api/withdrawals", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ method, address, amount })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("✅ Withdrawal request submitted!");
+          e.target.reset();
+          document.getElementById("withdrawForm").style.display = "none";
+        } else {
+          alert(data.error || "Something went wrong.");
+        }
+      } catch (err) {
+        console.error("Withdrawal error", err);
+        alert("⚠️ Server error.");
+      }
+    });
+  </script>
+</body>
+</html>
