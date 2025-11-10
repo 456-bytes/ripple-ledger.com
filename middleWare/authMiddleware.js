@@ -1,10 +1,10 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/user');
+import jwt from 'jsonwebtoken';
+import User from '../models/user.js';
 
 /**
  * Require authentication (valid JWT cookie)
  */
-const requireAuth = async (req, res, next) => {
+export const requireAuth = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
 
@@ -23,8 +23,8 @@ const requireAuth = async (req, res, next) => {
       return res.redirect('/login');
     }
 
-    req.userId = user._id; // ✅ for backward compatibility
-    req.user = user;       // ✅ ensures req.user._id exists (fixes your createInvite bug)
+    req.userId = user._id;
+    req.user = user;
     next();
 
   } catch (err) {
@@ -34,9 +34,9 @@ const requireAuth = async (req, res, next) => {
 };
 
 /**
- * Check user (for templating, not required routes)
+ * Check user (for templating, optional middleware)
  */
-const checkUser = async (req, res, next) => {
+export const checkUser = async (req, res, next) => {
   const token = req.cookies.jwt;
 
   if (token) {
@@ -59,9 +59,8 @@ const checkUser = async (req, res, next) => {
 /**
  * Require admin role
  */
-const requireAdmin = async (req, res, next) => {
+export const requireAdmin = async (req, res, next) => {
   try {
-    // Make sure req.user is set (from requireAuth)
     const user = req.user || (req.userId ? await User.findById(req.userId) : null);
 
     if (!user || user.role !== 'admin') {
@@ -69,7 +68,7 @@ const requireAdmin = async (req, res, next) => {
       return res.status(403).json({ message: 'Access denied. Admins only.' });
     }
 
-    req.user = user; // ✅ make sure req.user is always available for controllers
+    req.user = user;
     next();
 
   } catch (err) {
@@ -77,5 +76,3 @@ const requireAdmin = async (req, res, next) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
-module.exports = { requireAuth, checkUser, requireAdmin };

@@ -1,9 +1,12 @@
 // controllers/adminController.js
-const User = require('../models/user');
+import User from '../models/user.js';
 // const mongoose = require("mongoose");
-const Invite = require('../models/invite');
-const crypto = require('crypto');
-const { sendMail, withdrawalStatusTemplate } = require("../utils/mailer");
+import Invite from '../models/invite.js';
+import crypto from 'crypto';
+import {
+  sendMail,
+  withdrawalStatusTemplate
+} from "../utils/mailer.js";
 
 // ⚠️ Safe stub if Withdrawal model missing
 let Withdrawal;
@@ -213,7 +216,7 @@ async function revokeInvite(req, res) {
 }
 
 /* ---------------- EXPORTS ---------------- */
-module.exports = {
+export default {
   getUsers,
   userOverview,
   adjustField,

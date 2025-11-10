@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const authController = require("./controllers/authController");
+import { Router } from "express";
+import authController from "./controllers/authController.js";
 
 const router = Router();
 
@@ -13,4 +13,4 @@ router.get("/logout", authController.logout_get);
 // ✅ OTP verification route
 router.post("/verify", authController.verify_post);
 
-module.exports = router;
+export default router;

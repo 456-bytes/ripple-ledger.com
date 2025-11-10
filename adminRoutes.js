@@ -1,6 +1,6 @@
-const { Router } = require('express');
-const { requireAuth, requireAdmin } = require('./middleWare/authMiddleware');
-const adminController = require('./controllers/adminController');
+import { Router } from 'express';
+import { requireAuth, requireAdmin } from './middleWare/authMiddleware.js';
+import adminController from './controllers/adminController.js';
 
 const router = Router();
 
@@ -19,4 +19,4 @@ router.get('/invites', requireAuth, requireAdmin, adminController.listInvites);
 router.post('/invites', requireAuth, requireAdmin, adminController.createInvite);
 router.post('/invites/:id/revoke', requireAuth, requireAdmin, adminController.revokeInvite);
 
-module.exports = router; // ✅ this must be at the END
+export default router; // ✅ this must be at the END

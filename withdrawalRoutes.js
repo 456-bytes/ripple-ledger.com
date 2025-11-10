@@ -1,10 +1,10 @@
 // withdrawalRoutes.js
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { requireAuth } = require("./middleWare/authMiddleware");
-const Withdrawal = require("./models/withdrawal");
+import { requireAuth } from "./middleWare/authMiddleware.js";
+import Withdrawal from "./models/withdrawal.js";
 // 👇 FIX: Import controller
-const withdrawalController = require("./controllers/withdrawalController");
+import withdrawalController from "./controllers/withdrawalController.js";
 
 
 // User creates withdrawal request
@@ -39,4 +39,4 @@ router.post("/withdrawals", requireAuth, async (req, res) => {
 router.post("/withdrawals", requireAuth, withdrawalController.createWithdrawal);
 
   
-  module.exports = router;
+  export default router;

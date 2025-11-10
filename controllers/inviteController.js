@@ -1,34 +1,39 @@
-const crypto = require("crypto");
-const Invite = require("../models/invite");
-const User = require("../models/user");
+import crypto from "crypto";
+import Invite from "../models/invite.js";
+import User from "../models/user.js";
 
 function sha256(s) {
   return crypto.createHash("sha256").update(s).digest("hex");
 }
 
-exports.createInvite = async (req, res) => {
+export const createInvite = async (req, res) => {
   try {
-    const { expiresInHours, maxUses } = req.body;
+    const { expiresInHours = 24, maxUses = 1 } = req.body;
 
-    const admin = req.user; // assuming you have admin auth middleware
+    const admin = req.user; // assuming admin is attached by auth middleware
     if (!admin || admin.role !== "admin") {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
+    // ✅ Generate secure token & hash
     const rawToken = crypto.randomBytes(24).toString("hex");
-    const tokenHash = sha256(rawToken);
+    const hashedToken = sha256(rawToken);
+
+    // ✅ Expiration date
     const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
 
+    // ✅ Create invite (use `token`, not `tokenHash`)
     const invite = await Invite.create({
-      tokenHash,
+      token: hashedToken,
       createdBy: admin._id,
       maxUses,
       expiresAt,
     });
 
-    const fullUrl = `${req.protocol}://${req.get("host")}/signup?invite=${rawToken}`;
+    // ✅ The link you send to user (raw token)
+    const fullUrl = `${req.protocol}://${req.get("host")}/signup?token=${rawToken}`;
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Invite created successfully",
       inviteLink: fullUrl,
@@ -36,7 +41,7 @@ exports.createInvite = async (req, res) => {
       maxUses,
     });
   } catch (err) {
-    console.error("createInvite error", err);
-    res.status(500).json({ message: "Server error creating invite" });
+    console.error("createInvite error:", err);
+    return res.status(500).json({ message: "Server error creating invite" });
   }
 };

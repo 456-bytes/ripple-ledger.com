@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const verificationTokenSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "user",
     required: true,
   },
   token: {
@@ -32,4 +32,4 @@ verificationTokenSchema.methods.compareToken = async function (token) {
   return await bcrypt.compare(token, this.token);
 };
 
-module.exports = mongoose.model("VerificationToken", verificationTokenSchema);
+export default mongoose.model("VerificationToken", verificationTokenSchema);

@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { sendMail } = require("./utils/mailer");
+import { sendMail } from "./utils/mailer.js";
 
 console.log("SMTP_HOST:", process.env.SMTP_HOST);
 console.log("SMTP_PORT:", process.env.SMTP_PORT);

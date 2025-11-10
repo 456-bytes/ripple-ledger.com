@@ -1,13 +1,13 @@
-const Withdrawal = require("../models/withdrawal");
-const User = require("../models/user");
-const sendMail = require("../utils/mailer"); // your mailer engine
-const withdrawalStatusTemplate = require("../emailTemplates/withdrawalStatusTemplate"); // email HTML template
+import Withdrawal from "../models/withdrawal.js";
+import User from "../models/user.js";
+import { sendMail } from "../utils/mailer.js"; // your mailer engine
+import withdrawalStatusTemplate from "../emailTemplates/withdrawalStatusTemplate.js"; // email HTML template
 
 // 👇 Add this here
 console.log("withdrawalStatusTemplate type:", typeof withdrawalStatusTemplate);
 
 // User requests a withdrawal
-exports.createWithdrawal = async (req, res) => {
+export const createWithdrawal = async (req, res) => {
   try {
     const { method, address, amount } = req.body;
 
@@ -60,7 +60,7 @@ exports.createWithdrawal = async (req, res) => {
 };
 
 // Admin approves or rejects a withdrawal
-exports.approveWithdrawal = async (req, res) => {
+export const approveWithdrawal = async (req, res) => {
     try {
       const { withdrawalId, status } = req.body; // status: 'approved' or 'rejected'
   
@@ -105,3 +105,9 @@ exports.approveWithdrawal = async (req, res) => {
       res.status(500).json({ success: false, message: err.message });
     }
   };
+
+  export default {
+    createWithdrawal,
+    approveWithdrawal,
+  };
+  

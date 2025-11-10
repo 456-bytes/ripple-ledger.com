@@ -1,6 +1,6 @@
 // middleWare/adminAuth.js
-const jwt = require('jsonwebtoken');
-const User = require('../models/user');
+import jwt from 'jsonwebtoken';
+import User from '../models/user.js';
 
 // ✅ Require login first
 const requireAuth = (req, res, next) => {
@@ -33,4 +33,4 @@ const requireAdmin = async (req, res, next) => {
   next();
 };
 
-module.exports = { requireAuth, requireAdmin };
+export default { requireAuth, requireAdmin };

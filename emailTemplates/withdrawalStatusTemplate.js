@@ -1,4 +1,4 @@
-module.exports = ({ name, amount, status }) => `
+export default ({ name, amount, status }) => `
   <div style="font-family: Arial, sans-serif; line-height: 1.6;">
     <h2>Withdrawal Status Update</h2>
     <p>Hi ${name || "there"},</p>
