@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
     required: [true, 'please enter a strong password'],
     minlength: [6, 'minimum password length is 6 characters'],
   },
+  resetPasswordRequestedAt: { type: Date },
+  resetPasswordToken: { type: String },
+resetPasswordExpires: { type: Date },
+
   wallet: { type: Number, default: 0.00 },
   profit: { type: Number, default: 0.00 },
   fundswithdraw: { type: Number, default: 0.00 },
