@@ -55,7 +55,13 @@
                         <div class="text-center mt-4">
                             <p class="text-sm">Don't have an account? <a href="/signup"
                                     class="text-blue-600 hover:text-blue-800">Sign Up</a></p>
+
                         </div>
+
+                        <div class="text-center mt-3">
+                            <a href="/api/auth/forgot-password" class="text-blue-600 hover:underline">
+                              Forgot your password?
+                            </a>
 
                         <script>
                             const form = document.querySelector('form');
@@ -131,6 +137,18 @@
             </div>
         </div>
     </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const msg = urlParams.get('msg');
+        if (msg) {
+          const msgBox = document.createElement('p');
+          msgBox.textContent = msg;
+          msgBox.style.color = 'green';
+          msgBox.style.textAlign = 'center';
+          document.body.prepend(msgBox);
+        }
+      </script>
+      
     <!--Start of Tawk.to Script-->
 <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();

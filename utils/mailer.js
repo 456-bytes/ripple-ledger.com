@@ -116,3 +116,21 @@ export function withdrawalStatusTemplate({ status, amount, method, address, note
     </div>
   `;
 }
+
+export function resetEmailTemplate({ name, link }) {
+  return `
+    <div style="font-family: Arial, sans-serif">
+      <h2>Password Reset Request</h2>
+      <p>Hi ${name || "there"},</p>
+      <p>You requested to reset your Ripple-Ledger account password.</p>
+      <p>Click the link below to reset it (valid for 10 minutes):</p>
+      <a href="${link}"
+         style="display:inline-block;padding:10px 20px;background-color:#2563eb;color:white;text-decoration:none;border-radius:5px;">
+         Reset Password
+      </a>
+      <p>If you didn’t request this, please ignore this email.</p>
+      <br/>
+      <p>— Ripple-Ledger Security Team</p>
+    </div>
+  `;
+}

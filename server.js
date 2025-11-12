@@ -99,6 +99,8 @@ app.get('/signup', (req, res) => {
 });
 app.get('/login', (req, res) => res.render('login'));
 app.get('/verify', (req, res) => res.render('verify'));
+// app.get('/reset_password', (req, res) => res.render('reset_password'));
+// app.get('/forgot_password', (req, res) => res.render('forgot_password'));
 app.get("/dashboard", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.userId).lean();

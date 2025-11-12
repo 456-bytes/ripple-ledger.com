@@ -252,6 +252,78 @@ export const verify_post = async (req, res) => {
   }
 };
 
+// forgot password
+export async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with that email." });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    // Save hashed token & expiry
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+    await user.save();
+
+    const resetLink = `${process.env.APP_URL}/reset-password/${resetToken}`;
+
+    // Send email via Resend
+    await sendMail({
+      to: user.email,
+      subject: "Password Reset Request - Ripple-Ledger",
+      html: resetEmailTemplate({ name: user.name, link: resetLink }),
+    });
+
+    res.status(200).json({
+      message: "Password reset email sent successfully.",
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Server error while sending reset link." });
+  }
+}
+
+// reset password
+export async function resetPassword(req, res) {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: tokenHash,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired reset token." });
+    }
+
+    // Update password
+    const hashedPassword = await bcrypt.hash(password, 12);
+    user.password = hashedPassword;
+
+    // Clear reset fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Password reset successful. You can now log in with your new password.",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Server error while resetting password." });
+  }
+}
+
 // ---------------- DEFAULT EXPORT ----------------
 export default {
   login_get,
@@ -260,4 +332,6 @@ export default {
   signup_post,
   login_post,
   verify_post,
+  forgotPassword,
+  resetPassword
 };
